@@ -17,9 +17,9 @@ export const getTopFilms = async (req, res) => {
   `;
   try {
     const [rows] = await pool.query(query);
-    res.json(rows);
+    res.json(rows); // ✅ just return DB results
   } catch (err) {
-    console.error(err);
+    console.error("DB error:", err);
     res.status(500).json({ error: "Database error" });
   }
 };
