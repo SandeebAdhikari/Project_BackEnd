@@ -4,6 +4,8 @@ export const getTopFilms = async (req, res) => {
   const query = `
     SELECT f.film_id,
            f.title,
+           f.release_year,
+           f.rating,
            c.name AS category,
            COUNT(r.rental_id) AS rented
     FROM film f
@@ -17,7 +19,7 @@ export const getTopFilms = async (req, res) => {
   `;
   try {
     const [rows] = await pool.query(query);
-    res.json(rows); // ✅ just return DB results
+    res.json(rows);
   } catch (err) {
     console.error("DB error:", err);
     res.status(500).json({ error: "Database error" });
