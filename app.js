@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
-import filmRoutes from "./routes/filmRoutes.js";
-import actorRoutes from "./routes/actorRoutes.js";
+import filmRoutes from "./routes/topFiveFilmRoutes.js";
+import actorRoutes from "./routes/topActorRoutes.js";
 
 const app = express();
 

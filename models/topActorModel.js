@@ -1,0 +1,24 @@
+import pool from "../config/db.js";
+
+/**
+ * Top 5 actors who appear in the most films in inventory,
+ * including how many times their films were rented.
+ */
+export const getTopActorsInInventory = async () => {
+  const query = `
+    SELECT a.actor_id,
+           a.first_name,
+           a.last_name,
+           COUNT(DISTINCT fa.film_id) AS film_count,
+           COUNT(r.rental_id) AS rental_count
+    FROM actor a
+    JOIN film_actor fa ON a.actor_id = fa.actor_id
+    JOIN inventory i ON fa.film_id = i.film_id
+    LEFT JOIN rental r ON i.inventory_id = r.inventory_id
+    GROUP BY a.actor_id, a.first_name, a.last_name
+    ORDER BY film_count DESC, rental_count DESC
+    LIMIT 5;
+  `;
+  const [rows] = await pool.query(query);
+  return rows;
+};

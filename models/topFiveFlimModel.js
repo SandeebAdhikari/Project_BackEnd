@@ -1,6 +1,6 @@
 import pool from "../config/db.js";
 
-export const getTopFilms = async (req, res) => {
+export const getTopFiveFilmsFromDB = async () => {
   const query = `
     SELECT f.film_id,
            f.title,
@@ -13,15 +13,10 @@ export const getTopFilms = async (req, res) => {
     JOIN category c ON fc.category_id = c.category_id
     JOIN inventory i ON f.film_id = i.film_id
     JOIN rental r ON i.inventory_id = r.inventory_id
-    GROUP BY f.film_id, f.title, c.name
+    GROUP BY f.film_id, f.title, f.release_year, f.rating, c.name
     ORDER BY rented DESC
     LIMIT 5;
   `;
-  try {
-    const [rows] = await pool.query(query);
-    res.json(rows);
-  } catch (err) {
-    console.error("DB error:", err);
-    res.status(500).json({ error: "Database error" });
-  }
+  const [rows] = await pool.query(query);
+  return rows;
 };
