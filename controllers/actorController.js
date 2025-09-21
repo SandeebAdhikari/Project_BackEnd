@@ -1,5 +1,4 @@
-// backend/controllers/actorController.js
-import { getTopActorsInInventory } from "../models/topActorModel.js";
+import { getTopActorsInInventory } from "../models/actorModel.js";
 
 export const fetchTopActors = async (req, res) => {
   try {

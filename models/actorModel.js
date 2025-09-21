@@ -1,9 +1,5 @@
 import pool from "../config/db.js";
 
-/**
- * Top 5 actors who appear in the most films in inventory,
- * including how many times their films were rented.
- */
 export const getTopActorsInInventory = async () => {
   const query = `
     SELECT a.actor_id,

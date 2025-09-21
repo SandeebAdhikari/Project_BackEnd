@@ -1,5 +1,5 @@
 import express from "express";
-import { fetchTopActors } from "../controllers/topActorController.js";
+import { fetchTopActors } from "../controllers/actorController.js";
 
 const router = express.Router();
 

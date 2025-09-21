@@ -1,8 +1,7 @@
 import express from "express";
 import cors from "cors";
-import filmRoutes from "./routes/topFiveFilmRoutes.js";
-import actorRoutes from "./routes/topActorRoutes.js";
-import allFlimRoutes from "./routes/flimRoutes.js";
+import actorRoutes from "./routes/actorRoutes.js";
+import filmRoutes from "./routes/flimRoutes.js";
 const app = express();
 
 app.use(
@@ -16,7 +15,6 @@ app.use(express.json());
 // Routes
 app.use("/api/films", filmRoutes);
 app.use("/api/actors", actorRoutes);
-app.use("/api/films", allFlimRoutes);
 
 app.listen(4000, () => {
   console.log("Server running on http://localhost:4000");

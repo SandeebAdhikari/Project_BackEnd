@@ -24,3 +24,49 @@ export const getAllFilmsWithActorsFromDB = async () => {
   const [rows] = await pool.query(query);
   return rows;
 };
+
+export const getFilmByIdFromDB = async (id) => {
+  const query = `
+    SELECT f.film_id, f.title, f.description, f.release_year, f.rating,
+           l.name AS language, f.length, f.rental_rate,
+           GROUP_CONCAT(DISTINCT c.name) AS categories,
+           GROUP_CONCAT(DISTINCT CONCAT(a.first_name, ' ', a.last_name)) AS actors
+    FROM film f
+    JOIN language l ON f.language_id = l.language_id
+    JOIN film_category fc ON f.film_id = fc.film_id
+    JOIN category c ON fc.category_id = c.category_id
+    JOIN film_actor fa ON f.film_id = fa.film_id
+    JOIN actor a ON fa.actor_id = a.actor_id
+    WHERE f.film_id = ?
+    GROUP BY f.film_id, f.title, f.description, f.release_year, f.rating, l.name, f.length, f.rental_rate;
+  `;
+  const [rows] = await pool.query(query, [id]);
+
+  if (!rows[0]) return null;
+  return {
+    ...rows[0],
+    categories: rows[0].categories ? rows[0].categories.split(",") : [],
+    actors: rows[0].actors ? rows[0].actors.split(",") : [],
+  };
+};
+
+export const getTopFiveFilmsFromDB = async () => {
+  const query = `
+    SELECT f.film_id,
+           f.title,
+           f.release_year,
+           f.rating,
+           c.name AS category,
+           COUNT(r.rental_id) AS rented
+    FROM film f
+    JOIN film_category fc ON f.film_id = fc.film_id
+    JOIN category c ON fc.category_id = c.category_id
+    JOIN inventory i ON f.film_id = i.film_id
+    JOIN rental r ON i.inventory_id = r.inventory_id
+    GROUP BY f.film_id, f.title, f.release_year, f.rating, c.name
+    ORDER BY rented DESC
+    LIMIT 5;
+  `;
+  const [rows] = await pool.query(query);
+  return rows;
+};
