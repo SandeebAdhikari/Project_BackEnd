@@ -7,6 +7,8 @@ export const getAllFilmsWithActorsFromDB = async () => {
            f.description,
            f.release_year,
            f.rating,
+           f.length,
+           f.rental_rate,
            l.name AS language,
            c.name AS category,
            GROUP_CONCAT(CONCAT(a.first_name, ' ', a.last_name) ORDER BY a.last_name SEPARATOR ', ') AS actors
@@ -16,7 +18,7 @@ export const getAllFilmsWithActorsFromDB = async () => {
     JOIN category c ON fc.category_id = c.category_id
     JOIN film_actor fa ON f.film_id = fa.film_id
     JOIN actor a ON fa.actor_id = a.actor_id
-    GROUP BY f.film_id, f.title, f.description, f.release_year, f.rating, l.name, c.name
+    GROUP BY f.film_id, f.title, f.description, f.release_year, f.length, f.rating, l.name, c.name
     ORDER BY f.title;
   `;
   const [rows] = await pool.query(query);

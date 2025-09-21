@@ -1,4 +1,3 @@
-// backend/routes/topActorRoutes.js
 import express from "express";
 import { fetchTopActors } from "../controllers/topActorController.js";
 
