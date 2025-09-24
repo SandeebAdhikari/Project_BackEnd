@@ -3,6 +3,7 @@ import cors from "cors";
 import actorRoutes from "./routes/actorRoutes.js";
 import filmRoutes from "./routes/flimRoutes.js";
 import customersRoutes from "./routes/customerRoutes.js";
+import rentalsRoutes from "./routes/rentalRoutes.js";
 
 const app = express();
 
@@ -18,6 +19,7 @@ app.use(express.json());
 app.use("/api/films", filmRoutes);
 app.use("/api/actors", actorRoutes);
 app.use("/api/customers", customersRoutes);
+app.use("/api/rentals", rentalsRoutes);
 
 app.listen(4000, () => {
   console.log("Server running on http://localhost:4000");

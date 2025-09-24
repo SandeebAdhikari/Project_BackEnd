@@ -25,15 +25,13 @@ export const getTopFiveFilms = async (req, res) => {
 };
 
 export const getFilmById = async (req, res) => {
-  const { id } = req.params;
   try {
+    const { id } = req.params;
     const film = await getFilmByIdFromDB(id);
-    if (!film) {
-      return res.status(404).json({ error: "Film not found" });
-    }
+    if (!film) return res.status(404).json({ message: "Film not found" });
     res.json(film);
   } catch (err) {
-    console.error("DB error:", err);
-    res.status(500).json({ error: "Database error" });
+    console.error("Error fetching film:", err);
+    res.status(500).json({ error: "Failed to fetch film" });
   }
 };
