@@ -4,6 +4,7 @@ import actorRoutes from "./routes/actorRoutes.js";
 import filmRoutes from "./routes/flimRoutes.js";
 import customersRoutes from "./routes/customerRoutes.js";
 import rentalsRoutes from "./routes/rentalRoutes.js";
+import staffsRoutes from "./routes/staffRoutes.js";
 
 const app = express();
 
@@ -20,6 +21,7 @@ app.use("/api/films", filmRoutes);
 app.use("/api/actors", actorRoutes);
 app.use("/api/customers", customersRoutes);
 app.use("/api/rentals", rentalsRoutes);
+app.use("/api/staffs", staffsRoutes);
 
 app.listen(4000, () => {
   console.log("Server running on http://localhost:4000");
