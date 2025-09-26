@@ -1,4 +1,8 @@
-import { getCustomers, getCustomerCount } from "../models/customerModel.js";
+import {
+  getCustomers,
+  getCustomerCount,
+  searchCustomersFromDB,
+} from "../models/customerModel.js";
 
 export const fetchCustomers = async (req, res) => {
   try {
@@ -29,5 +33,16 @@ export const fetchCustomers = async (req, res) => {
   } catch (error) {
     console.error("Error fetching customers:", error);
     res.status(500).json({ error: "Failed to fetch customers" });
+  }
+};
+
+export const searchCustomers = async (req, res) => {
+  try {
+    const { q = "" } = req.query;
+    const customers = await searchCustomersFromDB(q);
+    res.json(customers);
+  } catch (err) {
+    console.error("Error searching customers:", err);
+    res.status(500).json({ error: "Database error" });
   }
 };
