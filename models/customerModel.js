@@ -81,24 +81,6 @@ export const getCustomerCount = async ({
   return rows[0].total;
 };
 
-export const searchCustomersFromDB = async (query) => {
-  const [rows] = await pool.query(
-    `
-    SELECT 
-      customer_id AS id,
-      first_name AS firstName,
-      last_name AS lastName,
-      email
-    FROM customer
-    WHERE first_name LIKE ? OR last_name LIKE ?
-    ORDER BY last_name ASC
-    LIMIT 20
-    `,
-    [`%${query}%`, `%${query}%`]
-  );
-  return rows;
-};
-
 // Add new customer
 export const addCustomer = async ({
   firstName,
