@@ -1,6 +1,7 @@
 import {
   getRentalFilmByIdFromDB,
   getRentalsByFilmDB,
+  markRentalAsReturned,
 } from "../models/rentalModel.js";
 
 export const getRentalFilmById = async (req, res) => {
@@ -25,5 +26,23 @@ export const getRentalsByFilm = async (req, res) => {
   } catch (err) {
     console.error("Error fetching rentals by film:", err);
     res.status(500).json({ error: "Server error" });
+  }
+};
+
+export const returnRental = async (req, res) => {
+  try {
+    const { rentalId } = req.params;
+    const success = await markRentalAsReturned(rentalId);
+
+    if (!success) {
+      return res
+        .status(404)
+        .json({ message: "Rental not found or already returned" });
+    }
+
+    res.json({ message: "Rental marked as returned successfully" });
+  } catch (error) {
+    console.error("Error marking rental as returned:", error);
+    res.status(500).json({ error: "Failed to update rental" });
   }
 };
