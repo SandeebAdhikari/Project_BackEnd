@@ -5,13 +5,10 @@ import {
 } from "../models/rentalModel.js";
 
 export const getRentalFilmById = async (req, res) => {
-  const { id } = req.params;
+  const { id } = req.query;
   try {
-    const rental = await getRentalFilmByIdFromDB(id);
-    if (!rental) {
-      return res.status(404).json({ error: "Rental not found" });
-    }
-    res.json(rental);
+    const rentals = await getRentalFilmByIdFromDB(id);
+    res.json(rentals);
   } catch (err) {
     console.error("DB error:", err);
     res.status(500).json({ error: "Database error" });
