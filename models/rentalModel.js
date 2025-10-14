@@ -42,3 +42,37 @@ export const markRentalAsReturned = async (rentalId) => {
   );
   return result.affectedRows > 0;
 };
+
+export const addRentalRecord = async ({
+  filmId,
+  customerId,
+  staffId,
+  copies,
+  rentalDuration,
+}) => {
+  try {
+    const [inventoryRows] = await pool.query(
+      `SELECT inventory_id FROM inventory WHERE film_id = ? LIMIT ?`,
+      [filmId, copies]
+    );
+
+    if (inventoryRows.length === 0) {
+      throw new Error("No available inventory for this film");
+    }
+
+    const rentalDate = new Date();
+
+    for (const item of inventoryRows) {
+      await pool.query(
+        `INSERT INTO rental (rental_date, inventory_id, customer_id, staff_id)
+         VALUES (?, ?, ?, ?)`,
+        [rentalDate, item.inventory_id, customerId, staffId]
+      );
+    }
+
+    return { message: "Rental(s) created successfully" };
+  } catch (err) {
+    console.error("Error adding rental record:", err);
+    throw err;
+  }
+};

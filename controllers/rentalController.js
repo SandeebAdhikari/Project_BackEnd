@@ -2,6 +2,7 @@ import {
   getRentalFilmByIdFromDB,
   getRentalsByFilmDB,
   markRentalAsReturned,
+  addRentalRecord, // ✅ new model import
 } from "../models/rentalModel.js";
 
 export const getRentalFilmById = async (req, res) => {
@@ -41,5 +42,29 @@ export const returnRental = async (req, res) => {
   } catch (error) {
     console.error("Error marking rental as returned:", error);
     res.status(500).json({ error: "Failed to update rental" });
+  }
+};
+
+// ✅ NEW CONTROLLER: Create a rental record
+export const createRental = async (req, res) => {
+  try {
+    const { filmId, customerId, staffId, copies, rentalDuration } = req.body;
+
+    if (!filmId || !customerId || !staffId || !copies || !rentalDuration) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    const result = await addRentalRecord({
+      filmId,
+      customerId,
+      staffId,
+      copies,
+      rentalDuration,
+    });
+
+    res.status(201).json(result);
+  } catch (error) {
+    console.error("Error creating rental:", error);
+    res.status(500).json({ error: "Failed to create rental" });
   }
 };

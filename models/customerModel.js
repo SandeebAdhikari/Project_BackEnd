@@ -10,15 +10,17 @@ export const getCustomers = async ({
 
   let baseQuery = `
     SELECT c.customer_id AS id,
-           c.first_name AS firstName,
-           c.last_name AS lastName,
-           c.email,
-           a.address,
-           ci.city,
-           co.country,
-           a.phone,
-           c.active,
-           c.create_date AS createDate,
+       c.first_name AS firstName,
+       c.last_name AS lastName,
+       c.email,
+       a.address,
+       a.address_id AS addressId,
+       ci.city,
+       co.country,
+       a.phone,
+       c.active,
+       c.create_date AS createDate,
+
            (
               SELECT COUNT(*)
               FROM rental r
@@ -60,6 +62,29 @@ export const getCustomers = async ({
   return rows;
 };
 
+export const searchCustomers = async (search = "") => {
+  if (!search.trim()) return [];
+
+  const [rows] = await pool.query(
+    `
+    SELECT 
+      c.customer_id AS id,
+      c.first_name AS firstName,
+      c.last_name AS lastName,
+      c.email
+    FROM customer c
+    WHERE 
+      LOWER(c.first_name) LIKE LOWER(?) 
+      OR LOWER(c.last_name) LIKE LOWER(?)
+    ORDER BY c.first_name ASC
+    LIMIT 10
+    `,
+    [`%${search}%`, `%${search}%`]
+  );
+
+  return rows;
+};
+
 export const getCustomerCount = async ({
   search = "",
   searchType = "name",
@@ -86,33 +111,129 @@ export const addCustomer = async ({
   firstName,
   lastName,
   email,
-  addressId,
+  address,
+  city,
+  country,
   active = 1,
 }) => {
-  const [result] = await pool.query(
-    `INSERT INTO customer (store_id, first_name, last_name, email, address_id, active, create_date)
-     VALUES (1, ?, ?, ?, ?, ?, NOW())`,
-    [firstName, lastName, email, addressId, active]
-  );
-  return { id: result.insertId };
+  try {
+    const [countryRows] = await pool.query(
+      `SELECT country_id FROM country WHERE country = ?`,
+      [country]
+    );
+    let countryId =
+      countryRows.length > 0
+        ? countryRows[0].country_id
+        : (
+            await pool.query(`INSERT INTO country (country) VALUES (?)`, [
+              country,
+            ])
+          )[0].insertId;
+
+    const [cityRows] = await pool.query(
+      `SELECT city_id FROM city WHERE city = ? AND country_id = ?`,
+      [city, countryId]
+    );
+    let cityId =
+      cityRows.length > 0
+        ? cityRows[0].city_id
+        : (
+            await pool.query(
+              `INSERT INTO city (city, country_id) VALUES (?, ?)`,
+              [city, countryId]
+            )
+          )[0].insertId;
+
+    const [addressResult] = await pool.query(
+      `INSERT INTO address (address, address2, district, city_id, postal_code, phone, location)
+       VALUES (?, '', 'Default District', ?, '00000', '000-000-0000', POINT(0,0))`,
+      [address || `Default address for ${firstName} ${lastName}`, cityId]
+    );
+
+    const addressId = addressResult.insertId;
+
+    const [customerResult] = await pool.query(
+      `INSERT INTO customer (store_id, first_name, last_name, email, address_id, active, create_date)
+       VALUES (1, ?, ?, ?, ?, ?, NOW())`,
+      [firstName, lastName, email, addressId, active]
+    );
+
+    return { id: customerResult.insertId };
+  } catch (error) {
+    console.error("Error adding customer:", error);
+    throw error;
+  }
 };
 
 // Update customer
 export const updateCustomer = async (
   id,
-  { firstName, lastName, email, addressId, active }
+  { firstName, lastName, email, address, city, country, addressId, active }
 ) => {
-  await pool.query(
-    `UPDATE customer 
-     SET first_name = ?, last_name = ?, email = ?, address_id = ?, active = ?
-     WHERE customer_id = ?`,
-    [firstName, lastName, email, addressId, active, id]
-  );
-  return { id };
+  try {
+    const [countryRows] = await pool.query(
+      `SELECT country_id FROM country WHERE country = ?`,
+      [country]
+    );
+    let countryId =
+      countryRows.length > 0
+        ? countryRows[0].country_id
+        : (
+            await pool.query(`INSERT INTO country (country) VALUES (?)`, [
+              country,
+            ])
+          )[0].insertId;
+
+    const [cityRows] = await pool.query(
+      `SELECT city_id FROM city WHERE city = ? AND country_id = ?`,
+      [city, countryId]
+    );
+    let cityId =
+      cityRows.length > 0
+        ? cityRows[0].city_id
+        : (
+            await pool.query(
+              `INSERT INTO city (city, country_id) VALUES (?, ?)`,
+              [city, countryId]
+            )
+          )[0].insertId;
+
+    await pool.query(
+      `UPDATE address 
+       SET address = ?, city_id = ?
+       WHERE address_id = ?`,
+      [address, cityId, addressId]
+    );
+
+    await pool.query(
+      `UPDATE customer 
+       SET first_name = ?, last_name = ?, email = ?, active = ?
+       WHERE customer_id = ?`,
+      [firstName, lastName, email, active, id]
+    );
+
+    return { id };
+  } catch (error) {
+    console.error("Error updating customer:", error);
+    throw error;
+  }
 };
 
-// Delete customer
 export const deleteCustomer = async (id) => {
+  await pool.query(`DELETE FROM rental WHERE customer_id = ?`, [id]);
+
   await pool.query(`DELETE FROM customer WHERE customer_id = ?`, [id]);
+
   return { id };
+};
+export const updateCustomerRentalStatus = async (id, status) => {
+  try {
+    await pool.query(
+      `UPDATE customer SET last_update = NOW() WHERE customer_id = ?`,
+      [id]
+    );
+  } catch (error) {
+    console.error("Error updating customer rental status:", error);
+    throw error;
+  }
 };

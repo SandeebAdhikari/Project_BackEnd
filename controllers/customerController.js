@@ -1,4 +1,12 @@
-import { getCustomers, getCustomerCount } from "../models/customerModel.js";
+import {
+  getCustomers,
+  getCustomerCount,
+  addCustomer,
+  updateCustomer,
+  deleteCustomer,
+  searchCustomers,
+  updateCustomerRentalStatus,
+} from "../models/customerModel.js";
 
 export const fetchCustomers = async (req, res) => {
   try {
@@ -32,12 +40,31 @@ export const fetchCustomers = async (req, res) => {
   }
 };
 
+export const searchCustomerByName = async (req, res) => {
+  try {
+    const { search = "" } = req.query;
+    const results = await searchCustomers(search);
+    res.json(results);
+  } catch (error) {
+    console.error("Error searching customers:", error);
+    res.status(500).json({ error: "Failed to search customers" });
+  }
+};
+
 // Add new customer
 export const addNewCustomer = async (req, res) => {
   try {
-    const { firstName, lastName, email, addressId, active = 1 } = req.body;
+    const {
+      firstName,
+      lastName,
+      email,
+      address = "",
+      city,
+      country,
+      active = 1,
+    } = req.body;
 
-    if (!firstName || !lastName || !email || !addressId) {
+    if (!firstName || !lastName || !email || !city || !country) {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
@@ -45,7 +72,9 @@ export const addNewCustomer = async (req, res) => {
       firstName,
       lastName,
       email,
-      addressId,
+      address,
+      city,
+      country,
       active,
     });
 
@@ -60,7 +89,16 @@ export const addNewCustomer = async (req, res) => {
 export const editCustomer = async (req, res) => {
   try {
     const { id } = req.params;
-    const { firstName, lastName, email, addressId, active } = req.body;
+    const {
+      firstName,
+      lastName,
+      email,
+      address,
+      city,
+      country,
+      addressId,
+      active,
+    } = req.body;
 
     if (!firstName || !lastName || !email || !addressId) {
       return res.status(400).json({ error: "Missing required fields" });
@@ -70,6 +108,9 @@ export const editCustomer = async (req, res) => {
       firstName,
       lastName,
       email,
+      address,
+      city,
+      country,
       addressId,
       active,
     });
@@ -90,5 +131,22 @@ export const removeCustomer = async (req, res) => {
   } catch (error) {
     console.error("Error deleting customer:", error);
     res.status(500).json({ error: "Failed to delete customer" });
+  }
+};
+
+export const updateRentalStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    if (!status) {
+      return res.status(400).json({ error: "Missing status value" });
+    }
+
+    await updateCustomerRentalStatus(id, status);
+    res.json({ message: "Customer rental status updated successfully" });
+  } catch (error) {
+    console.error("Error updating rental status:", error);
+    res.status(500).json({ error: "Failed to update customer rental status" });
   }
 };
